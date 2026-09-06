@@ -1,5 +1,4 @@
 import type { ProviderListings, CinemaProvider } from "@/lib/providers/types";
-import { CineworldProvider } from "@/lib/providers/cineworld";
 import { EverymanProvider } from "@/lib/providers/everyman";
 import { HomeProvider } from "@/lib/providers/home";
 import { LightProvider } from "@/lib/providers/light";
@@ -10,12 +9,9 @@ import type { ScreeningQuery } from "@/lib/types";
 
 /**
  * Aggregates chain adapters into one normalized listings payload.
- * Official JSON feeds refresh about every 10 minutes. Scraped sources
- * (Light Stockport, Northern Light Stretford, Stockport Plaza) are cached for a day.
- * ODEON's website is still behind a Cloudflare challenge from Node.
+ * Cineworld and ODEON are website-only in the UI (their feeds block Vercel).
  */
 export const cinemaProviders: CinemaProvider[] = [
-  new CineworldProvider(),
   new EverymanProvider(),
   new HomeProvider(),
   new VueProvider(),

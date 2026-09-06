@@ -32,6 +32,8 @@ export type DatePreset =
 
 export type GroupBy = "cinema" | "date";
 
+export type CinemaListingsMode = "live" | "website";
+
 export interface Cinema {
   id: string;
   name: string;
@@ -44,6 +46,8 @@ export interface Cinema {
   websiteUrl: string;
   enabled: boolean;
   inManchester: boolean;
+  /** Live = Encore fetches times. Website = open the chain's own listings. */
+  listingsMode: CinemaListingsMode;
 }
 
 export interface PosterPalette {

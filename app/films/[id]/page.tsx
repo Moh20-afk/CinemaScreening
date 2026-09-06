@@ -6,7 +6,9 @@ import Link from "next/link";
 import { DateSelector } from "@/components/date/date-selector";
 import { FilmPoster } from "@/components/film/film-poster";
 import { TrackFilmButton } from "@/components/film/track-film-button";
+import { WebsiteCinemasNote } from "@/components/cinema/website-listings";
 import { EmptyScreenings } from "@/components/layout/empty-screenings";
+import { getWebsiteListingsCinemas } from "@/lib/data/cinemas";
 import { ListingsStatus } from "@/components/layout/listings-status";
 import { ScreeningList } from "@/components/screening/screening-list";
 import { Badge } from "@/components/ui/badge";
@@ -91,7 +93,10 @@ export default function FilmPage() {
       </div>
 
       {loading ? null : filmScreenings.length === 0 ? (
-        <EmptyScreenings film={film} rangeLabel={rangeLabel} />
+        <div className="space-y-4">
+          <EmptyScreenings film={film} rangeLabel={rangeLabel} />
+          <WebsiteCinemasNote cinemas={getWebsiteListingsCinemas()} />
+        </div>
       ) : (
         <ScreeningList screenings={filmScreenings} filmTitle={film.title} />
       )}

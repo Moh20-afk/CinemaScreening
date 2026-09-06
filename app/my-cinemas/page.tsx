@@ -26,7 +26,8 @@ export default function MyCinemasPage() {
         <p className="text-sm tracking-[0.18em] text-primary uppercase">My Cinemas</p>
         <h1 className="font-heading text-3xl sm:text-4xl">Your cinema list</h1>
         <p className="max-w-2xl text-muted-foreground">
-          Add the venues you actually go to. Listings across Encore can then stick to this set.
+          Add the venues you actually go to. Encore listings follow this set. Cineworld and
+          ODEON stay on the list as shortcuts to their own sites.
         </p>
         <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
           <Button className="h-11 rounded-full sm:h-8" onClick={selectAllManchester}>

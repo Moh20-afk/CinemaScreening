@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
 
+import { WebsiteListingsPanel } from "@/components/cinema/website-listings";
 import { DateSelector } from "@/components/date/date-selector";
 import { ListingsStatus } from "@/components/layout/listings-status";
 import { ShowtimeButton } from "@/components/screening/showtime-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { getCinemaById } from "@/lib/data/cinemas";
+import { getCinemaById, listsOnWebsite } from "@/lib/data/cinemas";
 import { formatLongDate } from "@/lib/dates";
 import { useScreenings } from "@/hooks/use-screenings";
 import { useSelectedCinemas } from "@/hooks/use-selected-cinemas";
@@ -48,6 +49,7 @@ export default function CinemaListingsPage() {
   }
 
   const selected = selectedCinemaIds.includes(cinema.id);
+  const websiteOnly = listsOnWebsite(cinema);
   const groups = groupByFilm(screenings, getFilm);
 
   return (
@@ -73,22 +75,29 @@ export default function CinemaListingsPage() {
           >
             {selected ? "Remove cinema" : "Add cinema"}
           </Button>
-          <Button asChild variant="ghost" className="rounded-full">
-            <a href={cinema.websiteUrl} target="_blank" rel="noreferrer">
-              Cinema website
-            </a>
-          </Button>
+          {websiteOnly ? null : (
+            <Button asChild variant="ghost" className="rounded-full">
+              <a href={cinema.websiteUrl} target="_blank" rel="noreferrer">
+                Cinema website
+              </a>
+            </Button>
+          )}
         </div>
       </header>
 
-      <DateSelector cinemaLabels />
-      <ListingsStatus loading={loading} error={error} />
+      {websiteOnly ? (
+        <WebsiteListingsPanel cinema={cinema} />
+      ) : (
+        <>
+          <DateSelector cinemaLabels />
+          <ListingsStatus loading={loading} error={error} chain={cinema.chain} />
+        </>
+      )}
 
-      {loading ? null : groups.length === 0 ? (
+      {websiteOnly ? null : loading ? null : groups.length === 0 ? (
         <p className="text-muted-foreground">
-          No live listings for these dates. Showtimes are currently available for Cineworld,
-          Vue, Everyman, HOME Manchester, The Light Stockport, Northern Light Stretford and
-          Stockport Plaza. ODEON still blocks server-side listings.
+          No live listings for these dates. Try another range — Vue and the independents
+          usually publish a week or more ahead.
         </p>
       ) : (
         <div className="space-y-10">

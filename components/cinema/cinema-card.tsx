@@ -5,6 +5,7 @@ import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useSelectedCinemas } from "@/hooks/use-selected-cinemas";
+import { listsOnWebsite } from "@/lib/data/cinemas";
 import { formatDistance } from "@/lib/geo";
 import type { Cinema } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -36,6 +37,7 @@ export function CinemaCard({
         </p>
         <div className="flex flex-wrap gap-1.5 pt-1">
           <Badge variant="secondary">{cinema.chain}</Badge>
+          {listsOnWebsite(cinema) ? <Badge variant="outline">Times on their site</Badge> : null}
           {cinema.formats.map((format) => (
             <Badge key={format} variant="outline">
               {format}

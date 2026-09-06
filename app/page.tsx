@@ -3,11 +3,13 @@
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 
+import { WebsiteCinemasNote } from "@/components/cinema/website-listings";
 import { DateSelector } from "@/components/date/date-selector";
 import { FilmCard } from "@/components/film/film-card";
 import { FilmSearch } from "@/components/film/film-search";
 import { Button } from "@/components/ui/button";
 import { FilmGridSkeleton, ListingsStatus } from "@/components/layout/listings-status";
+import { getCinemaById, listsOnWebsite } from "@/lib/data/cinemas";
 import { cinemaCountForFilm, nextScreeningForFilm, uniqueFilmsFromScreenings } from "@/lib/filters";
 import { APP_TAGLINE, LOCATION_LABEL, POPULAR_RESCREENING_SEARCHES } from "@/lib/constants";
 import { useScreenings } from "@/hooks/use-screenings";
@@ -15,7 +17,13 @@ import { useSelectedCinemas } from "@/hooks/use-selected-cinemas";
 
 export default function DiscoverPage() {
   const { screenings, hasPersonalList, showAllCinemas, loading, error, getFilm } = useScreenings();
-  const { setShowAllCinemas } = useSelectedCinemas();
+  const { setShowAllCinemas, selectedCinemaIds, activeCinemaIds } = useSelectedCinemas();
+  const listedCinemas = (hasPersonalList && !showAllCinemas ? selectedCinemaIds : activeCinemaIds)
+    .map((id) => getCinemaById(id))
+    .filter((cinema): cinema is NonNullable<typeof cinema> => Boolean(cinema));
+  const websiteCinemas = listedCinemas.filter(listsOnWebsite);
+  const liveCinemas = listedCinemas.filter((cinema) => !listsOnWebsite(cinema));
+  const onlyWebsiteList = hasPersonalList && !showAllCinemas && liveCinemas.length === 0 && websiteCinemas.length > 0;
   const filmsShowing = uniqueFilmsFromScreenings(screenings, getFilm);
   const returning = filmsShowing.filter(
     (film) => film.isRerelease || film.screeningKind !== "standard",
@@ -32,8 +40,8 @@ export default function DiscoverPage() {
           {APP_TAGLINE}
         </h1>
         <p className="mt-4 max-w-xl text-muted-foreground">
-          Re-releases, anniversary prints, franchise marathons and tonight&apos;s showtimes —
-          without opening six cinema websites.
+          Re-releases, anniversary prints and tonight&apos;s times from Vue, Everyman, HOME and
+          independents. Cineworld and ODEON open on their own sites.
         </p>
         <div className="mt-8 max-w-2xl">
           <FilmSearch size="hero" showExamples />
@@ -53,11 +61,18 @@ export default function DiscoverPage() {
       </section>
 
       {hasPersonalList && !showAllCinemas && (
-        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/5 px-4 py-3 text-sm">
-          <p>Showing screenings at your cinemas.</p>
-          <Button variant="ghost" className="rounded-full" onClick={() => setShowAllCinemas(true)}>
-            Show all cinemas
-          </Button>
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/5 px-4 py-3 text-sm">
+            <p>
+              {onlyWebsiteList
+                ? "Your list is Cineworld and ODEON — times are on their websites."
+                : "Showing Encore listings for your cinemas."}
+            </p>
+            <Button variant="ghost" className="rounded-full" onClick={() => setShowAllCinemas(true)}>
+              Show all cinemas
+            </Button>
+          </div>
+          <WebsiteCinemasNote cinemas={websiteCinemas} />
         </div>
       )}
       {hasPersonalList && showAllCinemas && (
@@ -82,10 +97,11 @@ export default function DiscoverPage() {
           <FilmGridSkeleton />
         ) : (current.length ? current : filmsShowing).length === 0 ? (
           <p className="text-muted-foreground">
-            No live showtimes for these cinemas and dates.
-            {hasPersonalList && !showAllCinemas
-              ? " Use Show all cinemas to include Cineworld, Vue, Everyman, HOME, The Light, Northern Light and Stockport Plaza."
-              : " Try another date range — Cineworld often publishes from tomorrow onwards."}
+            {onlyWebsiteList
+              ? " Use the buttons above to check Cineworld or ODEON, or Show all cinemas for Vue and independents."
+              : hasPersonalList && !showAllCinemas
+                ? " No live Encore times for these cinemas and dates. Show all cinemas to include Vue, Everyman, HOME and independents."
+                : " No live showtimes for these dates. Try another range — Vue often publishes about a week ahead."}
           </p>
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">

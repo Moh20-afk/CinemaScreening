@@ -14,7 +14,8 @@ export function EmptyScreenings({
     <div className="rounded-3xl border border-dashed border-white/15 bg-white/3 px-4 py-8 text-center sm:px-6 sm:py-10">
       <p className="font-heading text-xl sm:text-2xl">No screenings found</p>
       <p className="mx-auto mt-3 max-w-md text-muted-foreground">
-        No Manchester screenings for {film.title} in {rangeLabel}.
+        No Encore listings for {film.title} in {rangeLabel}. It may still be on at Cineworld
+        or ODEON — check those sites directly.
       </p>
       <div className="mt-6 flex flex-col items-center gap-3">
         <TrackFilmButton film={film} emptyState />

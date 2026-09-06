@@ -30,12 +30,25 @@ export function FilmGridSkeleton({ count = 8 }: { count?: number }) {
   );
 }
 
+const CHAIN_TO_SOURCE: Record<string, string> = {
+  Cineworld: "cineworld",
+  Vue: "vue",
+  Everyman: "everyman",
+  HOME: "home",
+  "The Light": "light",
+  "Northern Light": "northern-light",
+  "Stockport Plaza": "plaza",
+  ODEON: "odeon",
+};
+
 export function ListingsStatus({
   loading,
   error,
+  chain,
 }: {
   loading: boolean;
   error: string | null;
+  chain?: string;
 }) {
   const { listings } = useListings();
   if (loading) {
@@ -48,7 +61,14 @@ export function ListingsStatus({
       </p>
     );
   }
-  const failed = listings.sources.filter((source) => !source.ok);
+  const sourceId = chain ? CHAIN_TO_SOURCE[chain] : undefined;
+  const failed = listings.sources.filter(
+    (source) =>
+      !source.ok &&
+      source.id !== "cineworld" &&
+      source.id !== "odeon" &&
+      (!sourceId || source.id === sourceId),
+  );
   if (failed.length === 0) return null;
   const names = failed.map((source) => SOURCE_LABELS[source.id] ?? source.id);
   return (

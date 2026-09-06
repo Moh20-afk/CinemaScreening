@@ -18,6 +18,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.myvue.com/cinema/manchester-printworks",
     enabled: true,
     inManchester: true,
+    listingsMode: "live",
   },
   {
     id: "vue-lowry",
@@ -31,6 +32,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.myvue.com/cinema/manchester",
     enabled: true,
     inManchester: false,
+    listingsMode: "live",
   },
   {
     id: "vue-stockport",
@@ -44,6 +46,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.myvue.com/cinema/stockport",
     enabled: false,
     inManchester: false,
+    listingsMode: "website",
   },
   {
     id: "odeon-trafford",
@@ -57,6 +60,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.odeon.co.uk/cinemas/manchester-trafford-centre",
     enabled: true,
     inManchester: false,
+    listingsMode: "website",
   },
   {
     id: "odeon-great-northern",
@@ -70,6 +74,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.odeon.co.uk/cinemas/manchester-great-northern",
     enabled: true,
     inManchester: true,
+    listingsMode: "website",
   },
   {
     id: "cineworld-didsbury",
@@ -83,6 +88,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.cineworld.co.uk/cinemas/manchester-didsbury",
     enabled: true,
     inManchester: true,
+    listingsMode: "website",
   },
   {
     id: "cineworld-ashton",
@@ -96,6 +102,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.cineworld.co.uk/cinemas/ashton-under-lyne",
     enabled: true,
     inManchester: false,
+    listingsMode: "website",
   },
   {
     id: "cineworld-bolton",
@@ -109,6 +116,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.cineworld.co.uk/cinemas/bolton",
     enabled: true,
     inManchester: false,
+    listingsMode: "website",
   },
   {
     id: "cineworld-warrington",
@@ -122,6 +130,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.cineworld.co.uk/cinemas/warrington",
     enabled: true,
     inManchester: false,
+    listingsMode: "website",
   },
   {
     id: "everyman-st-johns",
@@ -135,6 +144,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.everymancinema.com/manchester-st-johns",
     enabled: true,
     inManchester: true,
+    listingsMode: "live",
   },
   {
     id: "everyman-altrincham",
@@ -148,6 +158,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.everymancinema.com/altrincham",
     enabled: true,
     inManchester: false,
+    listingsMode: "live",
   },
   {
     id: "home-manchester",
@@ -161,6 +172,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://homemcr.org/cinema",
     enabled: true,
     inManchester: true,
+    listingsMode: "live",
   },
   {
     id: "stockport-plaza",
@@ -174,6 +186,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://stockportplaza.co.uk",
     enabled: true,
     inManchester: false,
+    listingsMode: "live",
   },
   {
     id: "savoy-heaton-moor",
@@ -187,6 +200,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.savoyheatonmoor.co.uk",
     enabled: false,
     inManchester: false,
+    listingsMode: "live",
   },
   {
     id: "showcase-prestwich",
@@ -200,6 +214,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.showcasecinemas.co.uk/cinema/showcase-cinema-de-lux-manchester",
     enabled: false,
     inManchester: false,
+    listingsMode: "website",
   },
   {
     id: "light-salford",
@@ -213,6 +228,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.lightcinemas.co.uk/salfordquays",
     enabled: false,
     inManchester: false,
+    listingsMode: "live",
   },
   {
     id: "light-stockport",
@@ -226,6 +242,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://stockport.thelight.co.uk/cinema",
     enabled: true,
     inManchester: false,
+    listingsMode: "live",
   },
   {
     id: "northern-light-stretford",
@@ -239,6 +256,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.tnlcinemastretford.co.uk/",
     enabled: true,
     inManchester: false,
+    listingsMode: "live",
   },
   {
     id: "cineworld-rochdale",
@@ -252,6 +270,7 @@ export const cinemas: Cinema[] = [
     websiteUrl: "https://www.cineworld.co.uk/cinemas/rochdale",
     enabled: false,
     inManchester: false,
+    listingsMode: "website",
   },
 ];
 
@@ -269,4 +288,16 @@ export function getCinemasByChain(chain: Cinema["chain"]): Cinema[] {
 
 export function getManchesterCinemas(): Cinema[] {
   return getEnabledCinemas().filter((cinema) => cinema.inManchester);
+}
+
+export function listsOnWebsite(cinema: Cinema): boolean {
+  return cinema.listingsMode === "website";
+}
+
+export function getWebsiteListingsCinemas(): Cinema[] {
+  return getEnabledCinemas().filter(listsOnWebsite);
+}
+
+export function getLiveListingsCinemas(): Cinema[] {
+  return getEnabledCinemas().filter((cinema) => !listsOnWebsite(cinema));
 }
