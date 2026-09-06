@@ -84,7 +84,7 @@ export default function DiscoverPage() {
           <p className="text-muted-foreground">
             No live showtimes for these cinemas and dates.
             {hasPersonalList && !showAllCinemas
-              ? " Use Show all cinemas to include Cineworld, Everyman, HOME, The Light, Northern Light and Stockport Plaza."
+              ? " Use Show all cinemas to include Cineworld, Vue, Everyman, HOME, The Light, Northern Light and Stockport Plaza."
               : " Try another date range — Cineworld often publishes from tomorrow onwards."}
           </p>
         ) : (

@@ -9,7 +9,7 @@ import type { Film, Screening, ScreeningQuery } from "@/lib/types";
  *   → catalog
  *   → frontend
  *
- * JSON adapters (Cineworld, Everyman, HOME) refresh about every 10 minutes.
+ * JSON adapters (Cineworld, Everyman, HOME, Vue) refresh about every 10 minutes.
  * HTML scrapers (Light Stockport, Northern Light Stretford, Stockport Plaza) refresh about once a day.
  */
 export interface ProviderListings {

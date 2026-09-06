@@ -50,13 +50,14 @@ JSON feeds are cached for about 10 minutes. Scraped sites are cached for a day, 
 | Source | Feed | Venues | Refresh |
 | --- | --- | --- | --- |
 | Cineworld | Quickbook `film-events` JSON | Bolton, Didsbury, Ashton-under-Lyne, Warrington | ~10 minutes |
+| Vue | Microservice `showings` JSON | Printworks, Lowry | ~10 minutes |
 | Everyman | Gatsby box-office JSON (`/api/gatsby-source-boxofficeapi`) | St John's, Altrincham | ~10 minutes |
 | HOME | Spektrix public API | HOME Manchester | ~10 minutes |
 | The Light | Miniguide `data.ashx` (HTML/JS scrape) | Stockport | Daily |
 | Northern Light | Movie-page HTML scrape | Stretford | Daily |
 | Stockport Plaza | `/whats-on/type/film/` HTML | Stockport Plaza | Daily |
 
-Vue and ODEON still block server-side showtimes (private BFF / Cloudflare). Showcase Prestwich is no longer listed on Showcase's UK site. Vue Stockport, Light Salford Quays and The Savoy Heaton Moor are disabled because those venues or sites are gone.
+ODEON's website is behind a Cloudflare browser challenge, so Node cannot read showtimes. Showcase Prestwich is no longer listed on Showcase's UK site. Vue Stockport, Light Salford Quays and The Savoy Heaton Moor are disabled because those venues or sites are gone.
 
 Posters come from the cinema payload where available (Cineworld CDN, Everyman/Webedia, HOME Spektrix, Plaza WordPress). Light titles and other gaps use TMDB when `TMDB_API_KEY` is set.
 
@@ -110,7 +111,7 @@ CRON_SECRET=
 
 ## Next development steps
 
-1. Add Vue and ODEON listings if those chains expose a feed (or allow a browser scrape).
+1. Add ODEON listings if a non-Cloudflare feed appears, or via a headless browser service.
 2. Add authentication and move the user store to Supabase.
 3. Send email or push alerts when a tracked film appears in the listings feed.
 4. Shared cinema lists for couples or groups (`SharedList` is already typed).

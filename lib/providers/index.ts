@@ -5,18 +5,20 @@ import { HomeProvider } from "@/lib/providers/home";
 import { LightProvider } from "@/lib/providers/light";
 import { NorthernLightProvider } from "@/lib/providers/northern-light";
 import { PlazaProvider } from "@/lib/providers/plaza";
+import { VueProvider } from "@/lib/providers/vue";
 import type { ScreeningQuery } from "@/lib/types";
 
 /**
  * Aggregates chain adapters into one normalized listings payload.
  * Official JSON feeds refresh about every 10 minutes. Scraped sources
  * (Light Stockport, Northern Light Stretford, Stockport Plaza) are cached for a day.
- * Vue and ODEON still block server-side showtimes (private BFF / Cloudflare).
+ * ODEON's website is still behind a Cloudflare challenge from Node.
  */
 export const cinemaProviders: CinemaProvider[] = [
   new CineworldProvider(),
   new EverymanProvider(),
   new HomeProvider(),
+  new VueProvider(),
   new LightProvider(),
   new NorthernLightProvider(),
   new PlazaProvider(),

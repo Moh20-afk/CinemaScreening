@@ -10,7 +10,13 @@ const DEFAULT_HEADERS = {
 
 async function fetchResponse(
   url: string,
-  options?: { revalidate?: number; timeoutMs?: number; accept?: string; tags?: string[] },
+  options?: {
+    revalidate?: number;
+    timeoutMs?: number;
+    accept?: string;
+    tags?: string[];
+    headers?: Record<string, string>;
+  },
 ): Promise<Response> {
   const timeoutMs = options?.timeoutMs ?? 20_000;
   const revalidate = options?.revalidate ?? JSON_REVALIDATE_SECONDS;
@@ -21,6 +27,7 @@ async function fetchResponse(
       headers: {
         ...DEFAULT_HEADERS,
         ...(options?.accept ? { Accept: options.accept } : {}),
+        ...options?.headers,
       },
       signal: controller.signal,
       cache: revalidate === 0 ? "no-store" : "force-cache",
@@ -40,7 +47,12 @@ async function fetchResponse(
 
 export async function fetchJson<T>(
   url: string,
-  options?: { revalidate?: number; timeoutMs?: number; tags?: string[] },
+  options?: {
+    revalidate?: number;
+    timeoutMs?: number;
+    tags?: string[];
+    headers?: Record<string, string>;
+  },
 ): Promise<T> {
   const response = await fetchResponse(url, {
     ...options,
@@ -51,15 +63,35 @@ export async function fetchJson<T>(
 
 export async function fetchText(
   url: string,
-  options?: { revalidate?: number; timeoutMs?: number; accept?: string; tags?: string[] },
+  options?: {
+    revalidate?: number;
+    timeoutMs?: number;
+    accept?: string;
+    tags?: string[];
+    headers?: Record<string, string>;
+  },
 ): Promise<string> {
   const response = await fetchResponse(url, {
     revalidate: options?.revalidate ?? SCRAPE_REVALIDATE_SECONDS,
     timeoutMs: options?.timeoutMs,
     accept: options?.accept ?? "text/html,application/javascript,text/plain,*/*",
     tags: options?.tags ?? ["listings-scrape"],
+    headers: options?.headers,
   });
   return response.text();
+}
+
+export async function fetchRaw(
+  url: string,
+  options?: {
+    revalidate?: number;
+    timeoutMs?: number;
+    accept?: string;
+    tags?: string[];
+    headers?: Record<string, string>;
+  },
+): Promise<Response> {
+  return fetchResponse(url, options);
 }
 
 export async function mapPool<T, R>(

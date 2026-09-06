@@ -87,8 +87,8 @@ export default function CinemaListingsPage() {
       {loading ? null : groups.length === 0 ? (
         <p className="text-muted-foreground">
           No live listings for these dates. Showtimes are currently available for Cineworld,
-          Everyman, HOME Manchester, The Light Stockport, Northern Light Stretford and
-          Stockport Plaza. Vue and ODEON still block server-side listings.
+          Vue, Everyman, HOME Manchester, The Light Stockport, Northern Light Stretford and
+          Stockport Plaza. ODEON still blocks server-side listings.
         </p>
       ) : (
         <div className="space-y-10">
