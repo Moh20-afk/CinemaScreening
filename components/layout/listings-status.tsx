@@ -1,4 +1,18 @@
+"use client";
+
 import { Skeleton } from "@/components/ui/skeleton";
+import { useListings } from "@/components/providers/listings-provider";
+
+const SOURCE_LABELS: Record<string, string> = {
+  cineworld: "Cineworld",
+  vue: "Vue",
+  everyman: "Everyman",
+  home: "HOME",
+  light: "The Light",
+  "northern-light": "Northern Light",
+  plaza: "Stockport Plaza",
+  odeon: "ODEON",
+};
 
 export function FilmGridSkeleton({ count = 8 }: { count?: number }) {
   return (
@@ -23,6 +37,7 @@ export function ListingsStatus({
   loading: boolean;
   error: string | null;
 }) {
+  const { listings } = useListings();
   if (loading) {
     return <p className="text-sm text-muted-foreground">Loading live cinema listings…</p>;
   }
@@ -33,5 +48,12 @@ export function ListingsStatus({
       </p>
     );
   }
-  return null;
+  const failed = listings.sources.filter((source) => !source.ok);
+  if (failed.length === 0) return null;
+  const names = failed.map((source) => SOURCE_LABELS[source.id] ?? source.id);
+  return (
+    <p className="text-sm text-muted-foreground">
+      {names.join(", ")} showtimes could not be loaded. Other cinemas are listed below.
+    </p>
+  );
 }

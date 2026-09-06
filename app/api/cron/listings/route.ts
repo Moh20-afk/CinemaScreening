@@ -6,6 +6,7 @@ import { loadListings } from "@/lib/catalog";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
+export const preferredRegion = ["lhr1"];
 
 /**
  * Daily warm-up so scraped listings refresh even when nobody visits.

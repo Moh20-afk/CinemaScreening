@@ -75,17 +75,27 @@ async function vueSessionCookie(): Promise<string> {
   const response = await fetchRaw(`${BASE}/cinema/manchester-printworks/whats-on`, {
     revalidate: 0,
     timeoutMs: 25_000,
-    accept: "text/html,application/json,text/plain,*/*",
+    accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    headers: {
+      Referer: `${BASE}/`,
+    },
   });
   return cookieHeaderFromSetCookie(cookiesFromResponse(response));
 }
 
-async function loadCinema(externalId: string, cookie: string): Promise<VuePayload> {
+async function loadCinema(
+  externalId: string,
+  cookie: string,
+  extraHeaders?: Record<string, string>,
+): Promise<VuePayload> {
   const url = `${BASE}/api/microservice/showings/cinemas/${externalId}/films?minEmbargoLevel=1&includesSession=true&includeSessionAttributes=true`;
   const options = {
     timeoutMs: 30_000,
     revalidate: cookie ? 0 : JSON_REVALIDATE_SECONDS,
-    headers: cookie ? { Cookie: cookie } : undefined,
+    headers: {
+      ...extraHeaders,
+      ...(cookie ? { Cookie: cookie } : {}),
+    },
   };
   try {
     return await fetchJson<VuePayload>(url, options);
@@ -96,28 +106,47 @@ async function loadCinema(externalId: string, cookie: string): Promise<VuePayloa
   }
 }
 
-export class VueProvider implements CinemaProvider {
-  id = "vue";
+async function loadVueViaEdge(query: ScreeningQuery): Promise<ProviderListings> {
+  const host = process.env.VERCEL_URL;
+  if (!host) return loadVueListings(query);
+  const from = format(query.from, "yyyy-MM-dd");
+  const to = format(query.to, "yyyy-MM-dd");
+  const headers: Record<string, string> = { Accept: "application/json" };
+  const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+  if (bypass) headers["x-vercel-protection-bypass"] = bypass;
+  const response = await fetch(`https://${host}/api/internal/vue?from=${from}&to=${to}`, {
+    cache: "no-store",
+    headers,
+  });
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} for Vue edge listings`);
+  }
+  return (await response.json()) as ProviderListings;
+}
 
-  async getListings(query: ScreeningQuery): Promise<ProviderListings> {
-    const wanted = new Set(
-      (query.cinemaIds ?? Object.values(CINEMA_IDS)).filter((id) =>
-        Object.values(CINEMA_IDS).includes(id),
-      ),
-    );
-    const externalIds = Object.entries(CINEMA_IDS)
-      .filter(([, cinemaId]) => wanted.has(cinemaId))
-      .map(([external]) => external);
-    if (externalIds.length === 0) return { films: [], screenings: [] };
+export async function loadVueListings(query: ScreeningQuery): Promise<ProviderListings> {
+  const wanted = new Set(
+    (query.cinemaIds ?? Object.values(CINEMA_IDS)).filter((id) =>
+      Object.values(CINEMA_IDS).includes(id),
+    ),
+  );
+  const externalIds = Object.entries(CINEMA_IDS)
+    .filter(([, cinemaId]) => wanted.has(cinemaId))
+    .map(([external]) => external);
+  if (externalIds.length === 0) return { films: [], screenings: [] };
 
-    let pages: VuePayload[];
-    try {
-      pages = await Promise.all(externalIds.map((id) => loadCinema(id, "")));
-    } catch {
-      const cookie = await vueSessionCookie();
-      if (!cookie) throw new Error("Vue listings require a microservice session cookie");
-      pages = await Promise.all(externalIds.map((id) => loadCinema(id, cookie)));
-    }
+  const vueHeaders = {
+    Referer: `${BASE}/cinema/manchester-printworks/whats-on`,
+  };
+
+  let pages: VuePayload[];
+  try {
+    pages = await Promise.all(externalIds.map((id) => loadCinema(id, "", vueHeaders)));
+  } catch {
+    const cookie = await vueSessionCookie();
+    if (!cookie) throw new Error("Vue listings require a microservice session cookie");
+    pages = await Promise.all(externalIds.map((id) => loadCinema(id, cookie, vueHeaders)));
+  }
 
     const from = format(query.from, "yyyy-MM-dd");
     const to = format(query.to, "yyyy-MM-dd");
@@ -177,6 +206,18 @@ export class VueProvider implements CinemaProvider {
       }
     });
 
-    return { films: [...filmsById.values()], screenings };
+  return { films: [...filmsById.values()], screenings };
+}
+
+export class VueProvider implements CinemaProvider {
+  id = "vue";
+
+  async getListings(query: ScreeningQuery): Promise<ProviderListings> {
+    // Cloudflare often 403s Vue HTML from Vercel Node. Edge is on the
+    // Cloudflare network and can collect the session cookie.
+    if (process.env.VERCEL && process.env.NEXT_RUNTIME !== "edge") {
+      return loadVueViaEdge(query);
+    }
+    return loadVueListings(query);
   }
 }

@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { loadListings, parseListingsQuery } from "@/lib/catalog";
 
 export const revalidate = 600;
+export const maxDuration = 60;
+export const preferredRegion = ["lhr1"];
 
 export async function GET(request: NextRequest) {
   const from = request.nextUrl.searchParams.get("from") ?? "";

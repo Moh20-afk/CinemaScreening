@@ -128,15 +128,28 @@ export class CineworldProvider implements CinemaProvider {
     );
 
     const jobs = externalIds.flatMap((cinema) => days.map((date) => ({ cinema, date })));
-    const pages = await mapPool(jobs, 6, async ({ cinema, date }) => {
+    let okCount = 0;
+    let lastError = "";
+    const pages = await mapPool(jobs, 4, async ({ cinema, date }) => {
       try {
-        return await fetchJson<FilmEventsBody>(
+        const page = await fetchJson<FilmEventsBody>(
           `${QUICKBOOK}/film-events/in-cinema/${cinema}/at-date/${date}?attr=&lang=en_GB`,
+          {
+            headers: {
+              Referer: "https://www.cineworld.co.uk/",
+            },
+          },
         );
-      } catch {
+        okCount += 1;
+        return page;
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : "Cineworld request failed";
         return { body: { films: [], events: [] } };
       }
     });
+    if (okCount === 0) {
+      throw new Error(lastError || "Cineworld listings are blocked");
+    }
 
     const filmsByExternal = new Map<string, Film>();
     const filmAttrs = new Map<string, string[]>();

@@ -98,6 +98,19 @@ TMDB_API_KEY=
 CRON_SECRET=
 ```
 
+## Deploy on Vercel
+
+The GitHub repo is connected to [cinema-screening.vercel.app](https://cinema-screening.vercel.app). Push to `main` to deploy.
+
+Vercel datacenter IPs are often blocked by Vue and Cineworld. This app pins functions to London (`lhr1`) and fetches Vue via an Edge route so those chains have a chance. Confirm in the Vercel project:
+
+1. Settings → Functions → Function Region → **London (lhr1)** if the dashboard still shows Washington or Iowa.
+2. Optional: set `CRON_SECRET` (Vercel Cron sends it automatically) and `TMDB_API_KEY`.
+3. Leave Deployment Protection off, or set `VERCEL_AUTOMATION_BYPASS_SECRET`, otherwise server-to-server Vue fetch 401s.
+4. After deploy, open `/api/listings?from=YYYY-MM-DD&to=YYYY-MM-DD` and check `sources`. `ok: true` with a screening count means that chain is live.
+
+ODEON still cannot be read from Node or Edge (Cloudflare challenge + Vista token). Independents (Everyman, HOME, The Light, Northern Light, Plaza) already work from Vercel.
+
 ## Product surface
 
 - **Discover** — search, date range, showing near you, returning to cinemas
