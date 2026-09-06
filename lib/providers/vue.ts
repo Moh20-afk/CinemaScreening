@@ -6,6 +6,7 @@ import {
 } from "@/lib/providers/scrape-utils";
 import { fetchJson, fetchRaw, JSON_REVALIDATE_SECONDS } from "@/lib/providers/http";
 import type { CinemaProvider, ProviderListings } from "@/lib/providers/types";
+import { fetchVercelInternalJson } from "@/lib/providers/vercel-internal";
 import type { Film, Screening, ScreeningQuery } from "@/lib/types";
 
 const BASE = "https://www.myvue.com";
@@ -107,21 +108,11 @@ async function loadCinema(
 }
 
 async function loadVueViaEdge(query: ScreeningQuery): Promise<ProviderListings> {
-  const host = process.env.VERCEL_URL;
-  if (!host) return loadVueListings(query);
   const from = format(query.from, "yyyy-MM-dd");
   const to = format(query.to, "yyyy-MM-dd");
-  const headers: Record<string, string> = { Accept: "application/json" };
-  const bypass = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
-  if (bypass) headers["x-vercel-protection-bypass"] = bypass;
-  const response = await fetch(`https://${host}/api/internal/vue?from=${from}&to=${to}`, {
-    cache: "no-store",
-    headers,
-  });
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status} for Vue edge listings`);
-  }
-  return (await response.json()) as ProviderListings;
+  return fetchVercelInternalJson<ProviderListings>(
+    `/api/internal/vue?from=${from}&to=${to}`,
+  );
 }
 
 export async function loadVueListings(query: ScreeningQuery): Promise<ProviderListings> {
@@ -216,7 +207,11 @@ export class VueProvider implements CinemaProvider {
     // Cloudflare often 403s Vue HTML from Vercel Node. Edge is on the
     // Cloudflare network and can collect the session cookie.
     if (process.env.VERCEL && process.env.NEXT_RUNTIME !== "edge") {
-      return loadVueViaEdge(query);
+      try {
+        return await loadVueViaEdge(query);
+      } catch {
+        return loadVueListings(query);
+      }
     }
     return loadVueListings(query);
   }

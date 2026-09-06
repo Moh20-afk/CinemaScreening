@@ -13,6 +13,7 @@ import {
 } from "@/lib/film-identity";
 import { fetchJson, mapPool } from "@/lib/providers/http";
 import type { CinemaProvider, ProviderListings } from "@/lib/providers/types";
+import { fetchVercelInternalJson } from "@/lib/providers/vercel-internal";
 import type { Film, Screening, ScreeningQuery } from "@/lib/types";
 
 const QUICKBOOK = "https://www.cineworld.co.uk/uk/data-api-service/v1/quickbook/10108";
@@ -108,10 +109,7 @@ function toScreening(
   };
 }
 
-export class CineworldProvider implements CinemaProvider {
-  id = "cineworld";
-
-  async getListings(query: ScreeningQuery): Promise<ProviderListings> {
+export async function loadCineworldListings(query: ScreeningQuery): Promise<ProviderListings> {
     const wanted = new Set(
       (query.cinemaIds ?? Object.values(CINEMA_IDS)).filter((id) =>
         Object.values(CINEMA_IDS).includes(id),
@@ -171,5 +169,23 @@ export class CineworldProvider implements CinemaProvider {
     }
 
     return { films: [...filmsByExternal.values()], screenings };
+}
+
+export class CineworldProvider implements CinemaProvider {
+  id = "cineworld";
+
+  async getListings(query: ScreeningQuery): Promise<ProviderListings> {
+    if (process.env.VERCEL && process.env.NEXT_RUNTIME !== "edge") {
+      try {
+        const from = format(query.from, "yyyy-MM-dd");
+        const to = format(query.to, "yyyy-MM-dd");
+        return await fetchVercelInternalJson<ProviderListings>(
+          `/api/internal/cineworld?from=${from}&to=${to}`,
+        );
+      } catch {
+        return loadCineworldListings(query);
+      }
+    }
+    return loadCineworldListings(query);
   }
 }
